@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Health MVP - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Tech Health MVP</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Análise de Repositório</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="repoForm">
+                            <div class="mb-3">
+                                <label for="repo" class="form-label">Repositório GitHub</label>
+                                <input type="text" class="form-control" id="repo" 
+                                       placeholder="Digite owner/repo ou cole a URL do GitHub"
+                                       required>
+                                <div class="form-text">Exemplo: facebook/react ou https://github.com/facebook/react</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Analisar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Score de Saúde Técnica</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="scoreChart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Métricas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="metricsChart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Recomendações</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="recommendations"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html> 
