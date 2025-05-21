@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: tech-health-mvp
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: TOGETHER_API_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false 
