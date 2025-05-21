@@ -4,7 +4,7 @@ class AIRecommendations {
   constructor() {
     // Configurando a URL base para o Ollama no container Docker
     this.baseUrl = 'http://localhost:11434/api';
-    this.model = 'mistral';
+    this.model = 'phi';
     this.initialized = false;
   }
 
@@ -41,9 +41,9 @@ class AIRecommendations {
         prompt: prompt,
         stream: false,
         options: {
-          temperature: 0.7,
-          top_p: 0.9,
-          max_tokens: 500
+          temperature: 0.5,
+          top_p: 0.8,
+          max_tokens: 300
         }
       });
 

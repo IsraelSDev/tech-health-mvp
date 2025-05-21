@@ -4,12 +4,34 @@ MVP para análise de saúde técnica de repositórios usando Ollama em Docker.
 
 ## Requisitos
 
-- Docker
-- Docker Compose
+- Docker Desktop (Windows/Mac) ou Docker Engine (Linux)
 - Node.js 16+
 - npm
 
-## Configuração
+## Instalação do Docker
+
+### Windows
+1. Baixe o Docker Desktop em: https://www.docker.com/products/docker-desktop
+2. Execute o instalador e siga as instruções
+3. Reinicie o computador
+4. Abra o Docker Desktop e aguarde a inicialização
+
+### Linux
+```bash
+# Instale o Docker Engine
+curl -fsSL https://get.docker.com | sh
+
+# Instale o Docker Compose
+sudo apt-get update
+sudo apt-get install docker-compose-plugin
+```
+
+### macOS
+1. Baixe o Docker Desktop em: https://www.docker.com/products/docker-desktop
+2. Arraste o aplicativo para a pasta Applications
+3. Abra o Docker Desktop e aguarde a inicialização
+
+## Configuração do Projeto
 
 1. Clone o repositório:
 ```bash
@@ -30,8 +52,21 @@ Edite o arquivo `.env` com suas configurações.
 
 ## Executando com Docker
 
+### Usando Docker Desktop (Recomendado para Windows/macOS)
+1. Abra o Docker Desktop
+2. Vá para a aba "Containers"
+3. Clique em "New container"
+4. Use a imagem `ollama/ollama:latest`
+5. Configure a porta 11434
+6. Clique em "Run"
+
+### Usando Linha de Comando
 1. Inicie o container do Ollama:
 ```bash
+# Windows (PowerShell)
+docker compose up -d
+
+# Linux/macOS
 docker-compose up -d
 ```
 
@@ -48,21 +83,37 @@ npm run dev
 
 - Verificar status do container:
 ```bash
+# Windows
+docker compose ps
+
+# Linux/macOS
 docker-compose ps
 ```
 
 - Ver logs do Ollama:
 ```bash
+# Windows
+docker compose logs -f ollama
+
+# Linux/macOS
 docker-compose logs -f ollama
 ```
 
 - Parar o container:
 ```bash
+# Windows
+docker compose down
+
+# Linux/macOS
 docker-compose down
 ```
 
 - Reiniciar o container:
 ```bash
+# Windows
+docker compose restart
+
+# Linux/macOS
 docker-compose restart
 ```
 
@@ -131,4 +182,4 @@ tech-health-mvp/
 
 ## Licença
 
-Este projeto está licenciado sob a licença 
+Este projeto está licenciado sob a licença MIT. 

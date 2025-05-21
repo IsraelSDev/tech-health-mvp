@@ -3,80 +3,299 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech Health MVP - Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" rel="stylesheet">
-    <link href="/css/styles.css" rel="stylesheet">
+    <title>Tech Health Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .score-card {
+            transition: all 0.3s ease;
+        }
+        .score-card:hover {
+            transform: translateY(-5px);
+        }
+        .metric-bar {
+            transition: width 1s ease-in-out;
+        }
+    </style>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">Tech Health MVP</a>
-        </div>
-    </nav>
-
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Análise de Repositório</h5>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Tech Health Report</h1>
+            
+            <!-- Formulário de Análise -->
+            <div class="max-w-xl mx-auto mt-4">
+                <form id="repoForm" class="bg-white rounded-lg shadow-md p-6">
+                    <div class="mb-4">
+                        <label for="repoUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                            URL do Repositório GitHub
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="text" 
+                                   id="repoUrl" 
+                                   class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                   placeholder="Ex: facebook/react ou https://github.com/facebook/react"
+                                   required>
+                            <button type="submit" 
+                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <i class="fas fa-search mr-2"></i>
+                                Analisar
+                            </button>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-500">
+                            Cole a URL do repositório GitHub ou digite no formato owner/repo
+                        </p>
                     </div>
-                    <div class="card-body">
-                        <form id="repoForm">
-                            <div class="mb-3">
-                                <label for="repo" class="form-label">Repositório GitHub</label>
-                                <input type="text" class="form-control" id="repo" 
-                                       placeholder="Digite owner/repo ou cole a URL do GitHub"
-                                       required>
-                                <div class="form-text">Exemplo: facebook/react ou https://github.com/facebook/react</div>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Analisar</button>
-                        </form>
-                    </div>
-                </div>
+                </form>
             </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Score de Saúde Técnica</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="scoreChart"></div>
-                    </div>
-                </div>
-            </div>
+            
+            <p class="text-gray-600 mt-4" id="repo-info">Selecione um repositório para análise</p>
         </div>
 
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Métricas</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="metricsChart"></div>
-                    </div>
-                </div>
+        <!-- Loading Indicator -->
+        <div id="loading" class="hidden">
+            <div class="flex justify-center items-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <span class="ml-3 text-gray-600">Analisando repositório...</span>
             </div>
         </div>
 
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Recomendações</h5>
+        <!-- Conteúdo do Relatório -->
+        <div id="report-content" class="hidden">
+            <!-- Score Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Total Score -->
+                <div class="score-card bg-white rounded-lg shadow-lg p-6 text-center">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Pontuação Total</h3>
+                    <div class="text-4xl font-bold text-blue-600" id="total-score">--</div>
+                    <div class="text-sm text-gray-500 mt-2" id="score-level">Carregando...</div>
+                </div>
+
+                <!-- Estrutura Score -->
+                <div class="score-card bg-white rounded-lg shadow-lg p-6 text-center">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Estrutura</h3>
+                    <div class="text-4xl font-bold text-green-600" id="estrutura-score">--</div>
+                    <div class="text-sm text-gray-500 mt-2">/50 pontos</div>
+                </div>
+
+                <!-- Qualidade Score -->
+                <div class="score-card bg-white rounded-lg shadow-lg p-6 text-center">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Qualidade</h3>
+                    <div class="text-4xl font-bold text-purple-600" id="qualidade-score">--</div>
+                    <div class="text-sm text-gray-500 mt-2">/50 pontos</div>
+                </div>
+            </div>
+
+            <!-- Métricas Detalhadas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Estrutura -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Métricas de Estrutura</h2>
+                    <div class="space-y-4" id="estrutura-metrics">
+                        <!-- Métricas serão inseridas aqui via JavaScript -->
                     </div>
-                    <div class="card-body">
-                        <div id="recommendations"></div>
+                </div>
+
+                <!-- Qualidade -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Métricas de Qualidade</h2>
+                    <div class="space-y-4" id="qualidade-metrics">
+                        <!-- Métricas serão inseridas aqui via JavaScript -->
                     </div>
+                </div>
+            </div>
+
+            <!-- Recomendações -->
+            <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Recomendações</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="recommendations">
+                    <!-- Recomendações serão inseridas aqui via JavaScript -->
+                </div>
+            </div>
+
+            <!-- Benchmark -->
+            <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Benchmark</h2>
+                <div class="prose max-w-none" id="benchmark">
+                    <!-- Benchmark será inserido aqui via JavaScript -->
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script src="/js/dashboard.js"></script>
+    <script>
+        // Função para formatar as métricas de estrutura
+        function createEstruturaMetric(name, data) {
+            return `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-2">${data.status}</span>
+                        <span class="font-medium">${name}</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-semibold">${data.score}/${data.maxScore} pontos</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Função para formatar as métricas de qualidade
+        function createQualidadeMetric(name, data) {
+            const percentage = (data.score / data.maxScore) * 100;
+            return `
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="font-medium">${name}</span>
+                        <span class="text-sm">${data.value}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="metric-bar bg-blue-600 h-2.5 rounded-full" style="width: ${percentage}%"></div>
+                    </div>
+                    <div class="text-right text-sm text-gray-500 mt-1">
+                        ${data.score.toFixed(1)}/${data.maxScore} pontos
+                    </div>
+                </div>
+            `;
+        }
+
+        // Função para atualizar o relatório
+        function updateReport(report) {
+            try {
+                // Verifica se o relatório tem todos os dados necessários
+                if (!report || !report.score || !report.metrics) {
+                    throw new Error('Dados do relatório incompletos');
+                }
+
+                // Formata o relatório se necessário
+                const formattedReport = {
+                    ...report,
+                    score: {
+                        ...report.score,
+                        formatted: {
+                            total: `${(report.score.total || 0).toFixed(1)}/100`,
+                            estrutura: `${(report.score.estrutura || 0).toFixed(1)}/50`,
+                            qualidade: `${(report.score.qualidade || 0).toFixed(1)}/50`
+                        }
+                    }
+                };
+
+                // Mostra o conteúdo do relatório
+                document.getElementById('report-content').classList.remove('hidden');
+                
+                // Atualiza informações do repositório
+                document.getElementById('repo-info').textContent = 
+                    `${formattedReport.metadata.owner}/${formattedReport.metadata.repository}`;
+
+                // Atualiza pontuações
+                document.getElementById('total-score').textContent = formattedReport.score.formatted.total;
+                document.getElementById('estrutura-score').textContent = formattedReport.score.formatted.estrutura;
+                document.getElementById('qualidade-score').textContent = formattedReport.score.formatted.qualidade;
+                document.getElementById('score-level').textContent = 
+                    `Nível ${formattedReport.score.level || 'N/A'} - ${formattedReport.score.description || 'Sem descrição'}`;
+
+                // Atualiza métricas de estrutura
+                const estruturaContainer = document.getElementById('estrutura-metrics');
+                if (formattedReport.metrics.estrutura) {
+                    estruturaContainer.innerHTML = Object.entries(formattedReport.metrics.estrutura)
+                        .map(([name, data]) => createEstruturaMetric(name, data))
+                        .join('');
+                }
+
+                // Atualiza métricas de qualidade
+                const qualidadeContainer = document.getElementById('qualidade-metrics');
+                if (formattedReport.metrics.qualidade) {
+                    qualidadeContainer.innerHTML = Object.entries(formattedReport.metrics.qualidade)
+                        .map(([name, data]) => createQualidadeMetric(name, data))
+                        .join('');
+                }
+
+                // Atualiza recomendações
+                const recommendationsContainer = document.getElementById('recommendations');
+                if (formattedReport.recommendations) {
+                    recommendationsContainer.innerHTML = Object.entries(formattedReport.recommendations)
+                        .map(([category, items]) => `
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <h3 class="font-semibold text-lg mb-2">${category}</h3>
+                                <ul class="list-disc list-inside space-y-2">
+                                    ${(items || []).map(item => `<li class="text-gray-700">${item}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `).join('');
+                }
+
+                // Atualiza benchmark
+                const benchmarkContainer = document.getElementById('benchmark');
+                if (formattedReport.benchmarks) {
+                    benchmarkContainer.innerHTML = formattedReport.benchmarks;
+                } else {
+                    benchmarkContainer.innerHTML = '<p class="text-gray-500">Nenhum benchmark disponível.</p>';
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar relatório:', error);
+                alert('Erro ao processar o relatório. Por favor, tente novamente.');
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        // Função para extrair owner/repo da URL
+        function extractRepoInfo(url) {
+            // Remove protocolo e domínio se presente
+            url = url.replace(/^https?:\/\/github\.com\//, '');
+            // Remove trailing slash
+            url = url.replace(/\/$/, '');
+            // Remove .git se presente
+            url = url.replace(/\.git$/, '');
+            
+            const parts = url.split('/');
+            if (parts.length !== 2) {
+                throw new Error('Formato inválido. Use owner/repo ou URL completa do GitHub.');
+            }
+            
+            return {
+                owner: parts[0],
+                repo: parts[1]
+            };
+        }
+
+        // Função para carregar o relatório
+        async function loadReport(repoUrl) {
+            try {
+                const repoInfo = extractRepoInfo(repoUrl);
+                
+                // Mostra loading
+                document.getElementById('loading').classList.remove('hidden');
+                document.getElementById('report-content').classList.add('hidden');
+                
+                const response = await fetch(`/api/analyze/${repoInfo.owner}/${repoInfo.repo}`);
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.statusText}`);
+                }
+                
+                const report = await response.json();
+                if (!report) {
+                    throw new Error('Resposta vazia da API');
+                }
+                
+                // Esconde loading
+                document.getElementById('loading').classList.add('hidden');
+                
+                updateReport(report);
+            } catch (error) {
+                console.error('Erro ao carregar relatório:', error);
+                alert(error.message || 'Erro ao analisar repositório');
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        // Manipula o envio do formulário
+        document.getElementById('repoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const repoUrl = document.getElementById('repoUrl').value.trim();
+            if (repoUrl) {
+                loadReport(repoUrl);
+            }
+        });
+    </script>
 </body>
 </html> 
