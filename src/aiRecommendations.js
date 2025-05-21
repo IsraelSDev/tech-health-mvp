@@ -1,56 +1,41 @@
-const axios = require('axios');
+const axios = require("axios");
 
 class AIRecommendations {
   constructor() {
-    // Configurando a URL base para o Ollama no container Docker
-    this.baseUrl = 'http://localhost:11434/api';
-    this.model = 'phi';
-    this.initialized = false;
-  }
-
-  async initialize() {
-    if (this.initialized) return;
-
-    try {
-      // Verifica se o modelo está disponível
-      const response = await axios.get(`${this.baseUrl}/tags`);
-      const models = response.data.models || [];
-      
-      if (!models.some(m => m.name === this.model)) {
-        console.log(`Baixando modelo ${this.model}...`);
-        await axios.post(`${this.baseUrl}/pull`, {
-          name: this.model
-        });
-      }
-      
-      this.initialized = true;
-      console.log('Ollama inicializado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao inicializar Ollama:', error);
-      throw new Error('Não foi possível conectar ao Ollama. Verifique se o container está rodando.');
-    }
+    this.baseUrl = 'https://api.together.xyz/v1';
+    this.model = 'mistralai/Mistral-7B-Instruct-v0.2';
   }
 
   async generateRecommendations(metrics, repoInfo) {
     try {
-      await this.initialize();
       const prompt = this.buildPrompt(metrics, repoInfo);
 
-      const response = await axios.post(`${this.baseUrl}/generate`, {
+      const response = await axios.post(`${this.baseUrl}/chat/completions`, {
         model: this.model,
-        prompt: prompt,
-        stream: false,
-        options: {
-          temperature: 0.5,
-          top_p: 0.8,
-          max_tokens: 300
+        messages: [
+          {
+            role: "system",
+            content: "Você é um assistente especializado em análise de saúde técnica de repositórios de código.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 500,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${process.env.TOGETHER_API_KEY}`
         }
       });
 
       // Como o modelo é mais básico, vamos combinar com recomendações padrão
       const defaultRecs = this.generateDefaultRecommendations(metrics);
-      const aiRecs = this.parseRecommendations(response.data.response);
-      
+      const aiRecs = this.parseRecommendations(
+        response.data.choices[0].message.content
+      );
+
       return this.mergeRecommendations(defaultRecs, aiRecs);
     } catch (error) {
       console.error("Erro ao gerar recomendações:", error);
@@ -58,43 +43,34 @@ class AIRecommendations {
     }
   }
 
-  mergeRecommendations(defaultRecs, aiRecs) {
-    const merged = {
-      estrutura: [...new Set([...defaultRecs.estrutura, ...aiRecs.estrutura])],
-      desenvolvimento: [
-        ...new Set([...defaultRecs.desenvolvimento, ...aiRecs.desenvolvimento]),
-      ],
-      revisao: [...new Set([...defaultRecs.revisao, ...aiRecs.revisao])],
-      documentacao: [
-        ...new Set([...defaultRecs.documentacao, ...aiRecs.documentacao]),
-      ],
-      testes: [...new Set([...defaultRecs.testes, ...aiRecs.testes])],
-    };
-
-    // Limita o número de recomendações por categoria
-    Object.keys(merged).forEach((category) => {
-      merged[category] = merged[category].slice(0, 5);
-    });
-
-    return merged;
-  }
-
   async benchmarkWithSimilarProjects(repoInfo) {
     try {
-      await this.initialize();
       const prompt = `Compare o repositório ${repoInfo.owner}/${repoInfo.name} com projetos similares.`;
-      
-      const response = await axios.post(`${this.baseUrl}/generate`, {
+
+      const response = await axios.post(`${this.baseUrl}/chat/completions`, {
         model: this.model,
-        prompt: prompt,
-        stream: false,
-        options: {
-          temperature: 0.7,
-          max_tokens: 300
+        messages: [
+          {
+            role: "system",
+            content: "Você é um assistente especializado em análise de saúde técnica de repositórios de código.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 300,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${process.env.TOGETHER_API_KEY}`
         }
       });
 
-      return response.data.response || "Não foi possível gerar o benchmark neste momento.";
+      return (
+        response.data.choices[0].message.content ||
+        "Não foi possível gerar o benchmark neste momento."
+      );
     } catch (error) {
       console.error("Erro ao gerar benchmark:", error);
       return "Não foi possível gerar o benchmark neste momento. Considere comparar manualmente com projetos similares no GitHub.";
@@ -217,6 +193,27 @@ class AIRecommendations {
         testes: [],
       };
     }
+  }
+
+  mergeRecommendations(defaultRecs, aiRecs) {
+    const merged = {
+      estrutura: [...new Set([...defaultRecs.estrutura, ...aiRecs.estrutura])],
+      desenvolvimento: [
+        ...new Set([...defaultRecs.desenvolvimento, ...aiRecs.desenvolvimento]),
+      ],
+      revisao: [...new Set([...defaultRecs.revisao, ...aiRecs.revisao])],
+      documentacao: [
+        ...new Set([...defaultRecs.documentacao, ...aiRecs.documentacao]),
+      ],
+      testes: [...new Set([...defaultRecs.testes, ...aiRecs.testes])],
+    };
+
+    // Limita o número de recomendações por categoria
+    Object.keys(merged).forEach((category) => {
+      merged[category] = merged[category].slice(0, 5);
+    });
+
+    return merged;
   }
 }
 
