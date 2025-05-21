@@ -1,3 +1,18 @@
+STACK - Node.js com express e js puro
+LLM - API Together (free) 
+LLM alternativa - (Docker file) Apenas rodar o "DOCKER COMPOSE UP -D" e alterar o arquivo aiRecommendations.js para usar localmente ao invés da api pública
+
+Estratégia: Criar uma interface rápida, com html e css inline com o formulário principal para input do Repositório a ser pesquisado,
+consultar a API do GitHub para obter os dados do repositório e reenviar os dados para uma llm realizar o benchmark ideal. Esquema visual de feedback,
+esquema de pontuação, e muitas aberturas para futuras melhorias.
+
+
+Ferramentas utilizadas: (Cursor.ai, Vertex.ai, Llamma - deepseek local, Chatgpt para traçar o esquema da estrutura do projeto)
+Tempo gasto: 3 - 4 horas.
+
+Url repositório:  https://github.com/IsraelSDev/tech-health-mvp
+Url deployada: https://tech-health-mvp-1.onrender.com/
+
 # Tech Health MVP
 
 MVP para análise de saúde técnica de repositórios usando Ollama em Docker.
