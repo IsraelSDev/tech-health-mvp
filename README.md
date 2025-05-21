@@ -10,7 +10,6 @@ esquema de pontuação, e muitas aberturas para futuras melhorias.
 Ferramentas utilizadas: (Cursor.ai, Vertex.ai, Llamma - deepseek local, Chatgpt para traçar o esquema da estrutura do projeto)
 Tempo gasto: 3 - 4 horas.
 
-Url repositório:  https://github.com/IsraelSDev/tech-health-mvp
 Url deployada: https://tech-health-mvp-1.onrender.com/
 
 # Tech Health MVP
